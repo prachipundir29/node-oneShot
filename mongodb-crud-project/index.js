@@ -32,6 +32,16 @@ app.post("/student-create", async (req, res) => {
   let { sName, sEmail, sAge } = req.body;
   let obj = { sName, sEmail, sAge };
 
+  let checkEmail = await studentCollection.findOne({sEmail: sEmail});
+  // console.log(checkEmail);
+  
+  if (checkEmail) {
+    return res.send({
+      status: 0 ,
+      msg: "Email already exists..."
+    })
+  }
+
   let insertRes = await studentCollection.insertOne(obj);
 
   let resObj = {
@@ -62,14 +72,24 @@ app.delete("/student-delete/:id", async (req, res) => {
 app.put("/student-update/:id", async (req, res) => {
   let { id } = req.params;
   let { sName, sEmail, sAge } = req.body;
-  let obj = { sName, sEmail, sAge };
+
+  let obj = {}; //data
+  if(sName!= "" && sName!= undefined && sName!= null){
+    obj['sName'] = sName
+  }
+  if(sEmail!= "" && sEmail!= undefined && sEmail!= null){
+    obj['sEmail'] = sEmail
+  }
+   if(sAge!= "" && sAge!= undefined && sAge!= null){
+    obj['sAge'] = sAge
+  }
 
   let myDB = await dbConnection();
   let studentCollection = myDB.collection("students");
 
   let updateRes = await studentCollection.updateOne(
     { _id: new ObjectId(id) },
-    { $set: { sName, sEmail } }
+    { $set: obj }
   );
 
   let resObj = {
